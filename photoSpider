@@ -1,0 +1,38 @@
+# -*- coding: utf-8 -*-
+"""
+@author: emperor
+"""
+import requests
+#from bs4 import BeautifulSoup
+import re
+import os
+#爬取网页
+start_url = "http://www.taotuxp.com/"
+depth = 100#翻页数
+for i in range(depth):
+    try:
+        url = start_url + str(252100+i*2) +".html"
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:77.0) Gecko/20100101 Firefox/77.0'}
+        r = requests.get(url, headers = headers, timeout = 30)
+        r.raise_for_status()
+        r.encoding = r.apparent_encoding
+    except Exception:
+        print(url+"页面404")
+    
+    #解析网页
+    html = r.text
+    
+    #创建新文件夹，存文件
+    dir_name = re.findall('<title>(.*?)</title>',html)[-1]
+    if not os.path.exists(dir_name):
+        os.mkdir(dir_name)
+    #新文件夹创建结束
+    
+    urls = re.findall('<p><img src="(.*?)" alt=".*?" /></p>',html)
+    
+    #保存图片
+    for url in urls:
+        fill_name = url.split('/')[-1]
+        r = requests.get(url, headers = headers)
+        with open (dir_name + '/' + fill_name, 'wb') as f:#用dir_name + '/' + fill_name代替fill_name，把图片存入文件夹
+            f.write(r.content)
